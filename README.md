@@ -27,30 +27,11 @@ In customer support platforms, automating response workflows carries the risk of
 
 ## Architecture
 
-```mermaid
-graph TD
-    A([User Question]) --> B[Triage]
+## Architecture
 
-    B -->|answerable| C[Retrieval]
-    B -->|clarification| D[Clarification]
-    B -->|out_of_scope| E[Out of Scope]
-    B -->|escalation| F[Escalation]
+The following diagram shows the complete OrbitDesk support-agent workflow:
 
-    C --> G[Generation]
-    G --> H[Verification]
-
-    H -->|Passed| I[Finalize]
-    H -->|Failed| J[Revision]
-
-    J -->|Revision limit not reached| G
-    J -->|Revision limit reached| I
-
-    D --> I
-    E --> I
-    F --> I
-
-    I --> K([Response])
-```
+![OrbitDesk Local Support Agent Architecture](docs/architecture.png)
 
 ### Architecture Summary
 
@@ -61,11 +42,12 @@ out-of-scope, and escalation requests. Answerable questions proceed through
 retrieval and local generation. Every generated answer is then passed through
 deterministic verification checks for evidence provenance and grounding.
 
-If verification fails, the graph sends the response through a revision loop.
-The loop is bounded by a maximum revision limit. If the answer still cannot
-be verified, the system returns the safe fallback:
+If verification fails, the graph sends the response through a bounded revision
+loop. If the answer still cannot be verified, the system returns:
 
 > The available documentation is insufficient to determine the next step.
+
+
 
 ### Offline Architecture
 
