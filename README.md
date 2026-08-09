@@ -191,7 +191,7 @@ Verify codebase integrity by running the test suite:
 
 ### Demo Video
 
-[Watch the OrbitDesk Support Agent demonstration](https://drive.google.com/file/d/10YuCvkgARjOUTcYoP61Km1070JKihmPC/view?usp=sharing)
+[Watch the OrbitDesk Support Agent demonstration](https://drive.google.com/file/d/10YuCvkgARjOUTcYoP61Km1070JKihmPC/view?usp=drive_link)
 
 ### GitHub Repository
 
