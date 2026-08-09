@@ -33,6 +33,7 @@ The following diagram shows the complete OrbitDesk support-agent workflow:
 
 ![OrbitDesk Local Support Agent Architecture](docs/architecture.png)
 
+
 ### Architecture Summary
 
 The system uses LangGraph to orchestrate a deterministic support workflow.
@@ -190,11 +191,11 @@ Verify codebase integrity by running the test suite:
 
 ### Demo Video
 
-[Watch the OrbitDesk Support Agent demonstration](YOUR_VIDEO_LINK)
+[Watch the OrbitDesk Support Agent demonstration](https://drive.google.com/file/d/10YuCvkgARjOUTcYoP61Km1070JKihmPC/view?usp=sharing)
 
 ### GitHub Repository
 
-[View the OrbitDesk source code](YOUR_GITHUB_REPOSITORY_LINK)
+[View the OrbitDesk source code](https://github.com/AvantikaSahu2203/orbitdesk-local-support-agent)
 
 ---
 
