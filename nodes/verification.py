@@ -36,6 +36,28 @@ def _contains_source_reference(answer: str) -> bool:
     )
 
 
+def _get_valid_retrieved_identifiers(retrieved_documents: List[Dict[str, Any]]) -> set:
+    identifiers = set()
+    for document in retrieved_documents:
+        name = document.get("document", "").strip().lower()
+        if not name:
+            continue
+        identifiers.add(name)
+        
+        # Match numerical prefixes for KB alias (e.g. "03_workspace..." -> "kb-003", "kb-3")
+        prefix_match = re.match(r'^(\d+)_', name)
+        if prefix_match:
+            num = int(prefix_match.group(1))
+            identifiers.add(f"kb-{num:03d}")
+            identifiers.add(f"kb-{num}")
+
+        # Also extract CASE-xxxx or KB-xxxx from the document name
+        for match in re.findall(r'\bcase-\w+\b|\bkb-\w+\b', name, re.IGNORECASE):
+            identifiers.add(match.lower())
+            
+    return identifiers
+
+
 def _referenced_documents_are_retrieved(
     answer: str,
     retrieved_documents: List[Dict[str, Any]],
@@ -50,11 +72,7 @@ def _referenced_documents_are_retrieved(
     if not retrieved_documents:
         return False
 
-    retrieved_names = {
-        document.get("document", "").strip().lower()
-        for document in retrieved_documents
-        if document.get("document")
-    }
+    retrieved_names = _get_valid_retrieved_identifiers(retrieved_documents)
 
     # Extract all document-like references from the answer:
     # 1. Any word ending in .md (e.g. 04_scheduled_exports.md)
@@ -116,11 +134,7 @@ def _answer_contains_unsupported_source(
     that is not present in the retrieved evidence.
     """
 
-    retrieved_names = {
-        document.get("document", "").strip().lower()
-        for document in retrieved_documents
-        if document.get("document")
-    }
+    retrieved_names = _get_valid_retrieved_identifiers(retrieved_documents)
 
     referenced_docs = set(re.findall(r'\b[\w-]+\.md\b|\bcase-\w+\b|\bkb-\w+\b', answer, re.IGNORECASE))
 
@@ -249,10 +263,32 @@ def verify_answer(
             "contact support",
             "contact your administrator",
             "contact an administrator",
+            "contact another person",
+            "contact the team",
+            "contact another team",
+            "contact a team",
             "try again",
+            "retry",
+            "retrying",
             "run another export",
             "resubmit the export",
+            "resubmit",
+            "resubmitting",
+            "rerun",
+            "rerunning",
+            "reschedule",
             "try rescheduling",
+            "check logs",
+            "checking logs",
+            "check deployment infrastructure",
+            "checking deployment infrastructure",
+            "connection is valid",
+            "connection is accessible",
+            "destination is enabled",
+            "user has permission",
+            "operation succeeded",
+            "problem is resolved",
+            "issue is resolved",
         ]
 
         for term in forbidden_unsupported:

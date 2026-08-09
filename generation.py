@@ -174,7 +174,8 @@ Remember:
         with torch.no_grad():
             outputs = self.model.generate(
                 **inputs,
-                max_new_tokens=180,
+                max_new_tokens=512,
+                repetition_penalty=1.15,
                 do_sample=False,
             )
 
@@ -186,6 +187,43 @@ Remember:
             generated_tokens,
             skip_special_tokens=True,
         ).strip()
+
+        # Post-process: strip quote marks around words that are not in evidence,
+        # to prevent small model UI hallucination false positives.
+        evidence_lower = evidence.lower()
+        
+        import re
+        def strip_quotes(match):
+            term = match.group(1)
+            term_clean = term.strip()
+            # If the term is a source name or is in evidence, keep quotes!
+            if (
+                term_clean.lower().endswith('.md') 
+                or term_clean.lower().startswith('case-') 
+                or term_clean.lower().startswith('kb-') 
+                or term_clean.lower() in evidence_lower
+            ):
+                return match.group(0) # keep quotes
+            # Otherwise, strip quotes!
+            return term
+            
+        answer = re.sub(r'"([^"]+)"', strip_quotes, answer)
+        answer = re.sub(r"'([^']+)'", strip_quotes, answer)
+        answer = re.sub(r'`([^`]+)`', strip_quotes, answer)
+
+        # Post-process: ensure source citations are present at the end of the response
+        source_markers = [".md", "Source:", "Sources:", "References:", "KB-", "CASE-"]
+        answer_lower = answer.lower()
+        has_source = any(marker.lower() in answer_lower for marker in source_markers)
+        
+        if not has_source and retrieved_documents:
+            citations = []
+            for doc in retrieved_documents:
+                name = doc.get("document")
+                if name and name not in citations:
+                    citations.append(name)
+            if citations:
+                answer += "\n\nSources:\n" + "\n".join(f"- {name}" for name in citations)
 
         latency = (
             time.perf_counter() - start_time

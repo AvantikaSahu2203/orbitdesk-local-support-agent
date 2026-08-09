@@ -65,6 +65,16 @@ def test_graph_flows():
     assert "clarification_node" in result["logs"]
     assert "retrieval_node" not in result["logs"]
 
+    # Vague Dashboard Regression Test
+    result = run_test(
+        "Something is wrong with my dashboard."
+    )
+
+    assert result["classification"] == "clarification"
+    assert "clarification_node" in result["logs"]
+    assert "retrieval_node" not in result["logs"]
+    assert "generation_node" not in result["logs"]
+
     # Out of scope
     result = run_test(
         "Write a refund for my subscription."

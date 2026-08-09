@@ -26,6 +26,7 @@ def triage_node(state: SupportState) -> SupportState:
         "billing",
         "charge my card",
         "payment",
+        "subscription",
     ]
 
     if any(term in question for term in out_of_scope_terms):
@@ -35,7 +36,7 @@ def triage_node(state: SupportState) -> SupportState:
             "classification": "out_of_scope",
             "requires_human": False,
             "confidence": 0.95,
-            "reason": "The request concerns billing or refunds, which are outside the supplied knowledge base.",
+            "reason": "The request concerns billing, cancelations, or refunds, which are outside the supplied knowledge base.",
             "logs": logs,
         }
 
@@ -74,6 +75,10 @@ def triage_node(state: SupportState) -> SupportState:
         "failed",
         "stopped",
         "error",
+        "wrong",
+        "something is wrong",
+        "problem",
+        "issue",
     ]
 
     # Questions with vague failure descriptions need

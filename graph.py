@@ -245,7 +245,8 @@ def verification_node(
 
     return {
         **state,
-        **result,
+        "verification_passed": result["verification_passed"],
+        "verification_reason": result["verification_reason"],
         "logs": logs,
     }
 
@@ -261,8 +262,16 @@ def finalize_node(
     logs = state.get("logs", [])
     logs.append("finalize_node")
 
+    classification = state.get("classification")
+    verification_passed = state.get("verification_passed", True)
+
+    answer = state.get("answer", "")
+    if classification == "answerable" and not verification_passed:
+        answer = "The available documentation is insufficient to determine the next step."
+
     return {
         **state,
+        "answer": answer,
         "logs": logs,
     }
 

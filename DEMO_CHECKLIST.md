@@ -6,16 +6,19 @@ This document acts as a step-by-step guide to verify the core capabilities of th
 
 ## 🚀 1. How to Run the Demo
 
-To run the interactive CLI demo:
+To run the interactive Web UI demo:
 1. Activate your virtual environment:
    ```bash
    .\venv\Scripts\activate
    ```
-2. Launch the application:
+2. Launch the Web UI server:
    ```bash
    python app.py
    ```
-You will enter a chat prompt loop where you can input the queries described below.
+3. Open your browser and navigate to:
+   `http://localhost:8000`
+
+You can click any of the preset sandbox scenario buttons at the top of the page, or type custom questions to test the support agent.
 
 ---
 

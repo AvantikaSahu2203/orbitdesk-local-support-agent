@@ -4,7 +4,7 @@ from nodes.triage import triage_node
 def test_triage():
     test_cases = [
         (
-            "My scheduled exports stopped after I changed my workspace timezone.",
+            "My scheduled exports stopped after I changed my workspace timezone. What should I check?",
             "answerable",
         ),
         (
@@ -12,7 +12,19 @@ def test_triage():
             "clarification",
         ),
         (
+            "Something is wrong with my dashboard.",
+            "clarification",
+        ),
+        (
+            "The export failed.",
+            "clarification",
+        ),
+        (
             "Write a refund for my subscription.",
+            "out_of_scope",
+        ),
+        (
+            "Can you cancel my subscription?",
             "out_of_scope",
         ),
         (
