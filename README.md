@@ -16,7 +16,7 @@ In customer support platforms, automating response workflows carries the risk of
   * `out_of_scope`: Intercepts and rejects out-of-bounds questions (e.g., refund policies).
   * `escalation`: Detects consecutive failures or explicit human escalation requests.
 * **Deterministic Output Verification**: 
-  * Rejects ungrounded IT contact or retry/rerun troubleshooting recomendations.
+  * Rejects ungrounded IT contact or retry/rerun troubleshooting recommendations.
   * Verifies menu, button, and settings names against raw context.
   * Invalidates citations to non-retrieved documents.
 * **Self-Correction Loop**: Revises failed answers up to a maximum limit within the graph execution.
@@ -26,36 +26,75 @@ In customer support platforms, automating response workflows carries the risk of
 ---
 
 ## Architecture
-The agent is designed as a StateGraph state machine that routes and verifies support state transitions:
 
 ```mermaid
 graph TD
-    Start([User Question]) --> Triage[Triage Node]
-    Triage -->|classification = clarification| Clarification[Clarification Node]
-    Triage -->|classification = out_of_scope| OutOfScope[Out of Scope Node]
-    Triage -->|classification = escalation| Escalation[Escalation Node]
-    Triage -->|classification = answerable| Retrieval[Retrieval Node]
-    
-    Clarification --> Finalize[Finalize Node]
-    OutOfScope --> Finalize
-    Escalation --> Finalize
-    
-    Retrieval --> Generation[Generation Node]
-    Generation --> Verification[Verification Node]
-    
-    Verification -->|Route to finalize| Finalize
-    Verification -->|Route to revision| Revision[Revision Node] -.-> Generation
-    
-    Finalize --> End([Return Response])
+    A([User Question]) --> B[Triage]
+
+    B -->|answerable| C[Retrieval]
+    B -->|clarification| D[Clarification]
+    B -->|out_of_scope| E[Out of Scope]
+    B -->|escalation| F[Escalation]
+
+    C --> G[Generation]
+    G --> H[Verification]
+
+    H -->|Passed| I[Finalize]
+    H -->|Failed| J[Revision]
+
+    J -->|Revision limit not reached| G
+    J -->|Revision limit reached| I
+
+    D --> I
+    E --> I
+    F --> I
+
+    I --> K([Response])
 ```
+
+### Architecture Summary
+
+The system uses LangGraph to orchestrate a deterministic support workflow.
+
+The triage stage prevents unnecessary RAG and generation for clarification,
+out-of-scope, and escalation requests. Answerable questions proceed through
+retrieval and local generation. Every generated answer is then passed through
+deterministic verification checks for evidence provenance and grounding.
+
+If verification fails, the graph sends the response through a revision loop.
+The loop is bounded by a maximum revision limit. If the answer still cannot
+be verified, the system returns the safe fallback:
+
+> The available documentation is insufficient to determine the next step.
+
+### Offline Architecture
+
+After the required models have been downloaded and cached locally, runtime
+execution does not require an external LLM API or remote support service.
+
+The runtime pipeline is:
+
+```
+User
+→ Local Web UI
+→ Local HTTP API
+→ LangGraph
+→ Local RAG / FAISS
+→ Local Embedding Model
+→ Local Qwen Generation Model
+→ Deterministic Verification
+→ Local Response
+```
+
+No OpenAI API, Anthropic API, or other remote LLM API is used during inference.
 
 ---
 
 ## Models
-* **Causal Generation Model**: `Qwen/Qwen2.5-0.5B-Instruct`
-  * Role: Offline language translation and answer generation based on retrieved context.
 * **Embedding Model**: `sentence-transformers/all-MiniLM-L6-v2`
   * Role: Transforms raw documentation and queries into dense vector spaces.
+* **Causal Generation Model**: `Qwen/Qwen2.5-0.5B-Instruct`
+  * Role: Local text generation for producing support responses from retrieved evidence.
 * **Embedding Dimension**: `384`
 
 ---
@@ -64,10 +103,12 @@ graph TD
 The application has been verified in the following local environment:
 * **OS**: Windows 10
 * **Python**: 3.10.0
-* **CPU**: AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD
+* **CPU**: AMD Ryzen 7 7435HS
 * **RAM**: 15.82 GB
-* **GPU**: None / CPU execution
-* **Inference Device**: CPU (using `torch` CPU-only build `2.1.2+cpu` or similar)
+* **GPU**: NVIDIA GeForce RTX 3050 Laptop GPU
+* **Inference Device**: CPU
+* **PyTorch**: 2.13.0+cpu
+* **CUDA Available**: False
 
 ---
 
@@ -163,14 +204,21 @@ Verify codebase integrity by running the test suite:
 
 ---
 
+## Demo
+
+### Demo Video
+
+[Watch the OrbitDesk Support Agent demonstration](YOUR_VIDEO_LINK)
+
+### GitHub Repository
+
+[View the OrbitDesk source code](YOUR_GITHUB_REPOSITORY_LINK)
+
+---
+
 ### AI Coding Assistant Disclosure
 AI coding assistants were used throughout this project to accelerate:
 * Writing boilerplate LangGraph nodes and StateGraph routing.
 * Refactoring regular expression post-processing details.
 * Structuring test assertions in `tests/test_triage.py` and `tests/test_graph.py`.
 * All final implementations, grounding constraints, and fallback logic were manually audited and verified by the developer.
-
----
-
-* Demo video: <ADD PUBLIC VIDEO LINK>
-* GitHub Repository: <ADD PUBLIC GITHUB URL>
